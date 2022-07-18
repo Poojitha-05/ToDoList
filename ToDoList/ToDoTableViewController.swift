@@ -17,33 +17,47 @@ class ToDoTableViewController: UITableViewController {
         }
         
         if let completeVC = segue.destination as? CompleteToDoViewController {
-            if let toDo = sender as? ToDo {
+            if let toDo = sender as? ToDoCD {
               completeVC.selectedToDo = toDo
               completeVC.previousVC = self
             }
           }
     }
     
-    var toDos : [ToDo] = [] // creates an empty array of type ToDo objs
+    var toDos : [ToDoCD] = [] // creates an empty array of type ToDo objs
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        toDos = createToDos()
-
     }
 //    viewDidLoad() ends
     
-    func createToDos() -> [ToDo] {
-        let swift = ToDo()
-        swift.name = "Learn Swift"
+//    func createToDos() -> [ToDo] {
+//        let swift = ToDo()
+//        swift.name = "Learn Swift"
+//
+//
+//        let dog = ToDo()
+//        dog.name = "Walk the Dog"
+//        dog.important = false
+////        ToDo.important is set to true by default
+//
+//      return [swift, dog]
+//    }
+    
+    func getToDos() {
+        // access Core Data
+          if let context = (UIApplication.shared.delegate as? AppDelegate)?.persistentContainer.viewContext {
+              // fetch ToDos from Core Data
+            if let coreDataToDos = try? context.fetch(ToDoCD.fetchRequest()) as? [ToDoCD] {
+                    toDos = coreDataToDos
+                    tableView.reloadData()
+            }
+          }
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        getToDos()
         
-        
-        let dog = ToDo()
-        dog.name = "Walk the Dog"
-        dog.important = false
-//        ToDo.important is set to true by default
-
-      return [swift, dog]
     }
     
     
@@ -66,10 +80,12 @@ class ToDoTableViewController: UITableViewController {
         // Configure the cell
 //        ? in the following statements is for unwrapping
         let toDo = toDos[indexPath.row]
-        if toDo.important {
-            cell.textLabel?.text = "🌟\t" + toDo.name
-        } else {
-            cell.textLabel?.text = toDo.name
+        if let name = toDo.name {
+            if toDo.important {
+                cell.textLabel?.text = "🌟\t" + name
+            } else {
+                cell.textLabel?.text = toDo.name
+            }
         }
         return cell
     }
